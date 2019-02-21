@@ -11,22 +11,28 @@ import android.view.MenuItem;
 import android.widget.*;
 
 public class Calculator extends AppCompatActivity {
-
     private float acc;
     private float reg;
+    private String inputText;
     private String outputText;
     private String lastOp;
 
-    boolean stateTerminal; // for determining if the text view should concatenate input or replace text with input.
+    //private boolean stateTerminal; // for determining if the text view should concatenate input or replace text with input.
+
+/*
+    private enum Op{
+        ADD, SUBTRACT, MULTIPLY, DIVIDE;
+    }
+*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculator);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+       FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -34,38 +40,104 @@ public class Calculator extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        lastOp = "";
         clear();
+        updateOutput("" + Float.parseFloat("25."));
     }
 
-    public void onClick(Button b){
-        String id = (b.getResources().getResourceName(b.getId())).split("/")[1];
-        //insert code
-
-        updateView();
+    private void clear(){
+        acc = 0;
+        reg = 0;
+        outputText = "0";
+        lastOp = "";
 
     }
 
-    private void concatenate(String input){
-        //
+    public void onClick(View v){
+        String id = (v.getResources().getResourceName(v.getId())).split("/")[1];
+        switch (id){
+            case "bAddition": case "bSubtraction": case "bMultiplication": case "bDivision":
+                setReg(getInputValue(inputText));
+                performLastOp();
+
+                lastOp = id;
+                break;
+            case: ""
+
+            default:
+                concatenate(id.charAt(1));
+                updateOutput(inputText);
+                break;
+        }
+
+
+        lastOp = "something";
+        updateOutput();
+
     }
+
+    private void getEntryType(){
+
+    }
+
+    private void performLastOp(){
+        if (lastOp.equals("")){
+            setAcc(reg);
+        }
+        else{
+            switch (lastOp){
+                case "bAddition":
+                    add();
+                    break;
+                case "bSubtraction":
+                    subtract();
+                    break;
+                case "bMultiplication":
+                    multiply();
+                    break;
+                case "bDivision":
+                    break;
+            }
+        }
+        outputText = "" + acc;
+        updateOutput();
+    }
+
+
+    private void concatenate(char c) {
+        if (!(c == '.' && hasDecimal(inputText))){inputText = inputText + c;}
+    }
+
 
     private void add(){
-        acc = acc + reg;
+        setAcc(acc + reg);
+    }
+
+    private void subtract(){
+        setAcc(acc - reg);
+    }
+
+    private void multiply(){
+        setAcc(acc * reg);
+
     }
 
     private void divide(){
         try {
-            acc = reg / acc;
+            setAcc(acc / reg);
         }
         catch(Exception e) {
             if (e.getCause().equals("division by zero")) {
-                outputText = "undefined";
+                updateOutput("undefined");
                 //update screen with error. CHECK HOW TO EXAMINE ERROR TYPES!
             } else {
-                outputText = "err";
+                updateOutput("err");
             }
         }
+    }
+
+    private void negate(){
+        if (inputText.charAt(0) == '-') {inputText = inputText.substring(1);}
+        else{inputText = "-" + inputText;}
     }
 
     private void sqrt(){
@@ -78,20 +150,51 @@ public class Calculator extends AppCompatActivity {
 
     private void equals(){
         //perform last operation with acc and reg (call method)
-        updateView();
+        updateOutput();
     }
 
-    private void clear(){
-        acc = 0;
-        reg = 0;
-        outputText = "0";
-
+    private void updateOutput(){
+        TextView outputWindow = findViewById(R.id.output);
+        if(hasDecimal(outputText)){outputWindow.setText(outputText);}
+        else{outputWindow.setText(outputText+ '.');}
 
     }
 
-    private void updateView(){
-        TextView outputWindow = (TextView) findViewById(R.id.output);
-        outputWindow.setText(outputText);
+    private void updateOutput(String message){
+        TextView outputWindow = findViewById(R.id.output);
+        outputWindow.setText(message);
+    }
+
+    private boolean isInt(float num){
+        return(num % 1 == 0);
+    }
+
+    private boolean hasDecimal(int num){
+        return hasDecimal("" + num);
+    }
+
+    //don't delete this one
+    private boolean hasDecimal(String num){
+
+        return (num.indexOf('.') > 0);
+    }
+
+    private float getInputValue(String input){
+        /*
+        if(input.charAt(0) == '-'){
+            input = input.substring(1);
+            return 0 - Float.parseFloat(input);
+        }
+        */
+        return Float.parseFloat(input);
+    }
+
+    private void setReg(float num){
+        reg = num;
+    }
+
+    private void setAcc(float num){
+        acc = num;
     }
 
     @Override
