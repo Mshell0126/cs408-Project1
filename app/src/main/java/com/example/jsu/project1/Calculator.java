@@ -46,12 +46,14 @@ public class Calculator extends AppCompatActivity {
         clrRegOnCnctnt = false;
         clear();
         lastButton = "bClear";
-        updateOutput("" + Float.parseFloat("-25."));
+        updateOutput();
     }
 
     private void clear(){
         acc = 0;
         reg = 0;
+        clrRegOnCnctnt = true;
+        inputText = "0";
         outputText = "0";
         lastOp = "bAddition";
 
@@ -61,16 +63,22 @@ public class Calculator extends AppCompatActivity {
         String id = (v.getResources().getResourceName(v.getId())).split("/")[1];
         switch (id){
             case "bAddition": case "bSubtraction": case "bMultiplication": case "bDivision":
+                if(clrRegOnCnctnt){
+                    lastOp = "";
+                    setReg(0);
+                }
                 if(!(lastButton.equals("bAddition") || lastButton.equals("bSubtraction") || lastButton.equals("bMultiplication") || lastButton.equals("bDivision"))){
                     setReg(getDisplayValue(inputText));
+                    outputText = "" + reg;
                     performLastOp();
+                    clrRegOnCnctnt = true;
                 }
                 lastOp = id;
-                clrRegOnCnctnt = true;
                 break;
 
             case "bSignChange":
                 negate();
+                updateOutput();
                 break;
             /*
             case "bDecimalPt":
@@ -78,58 +86,55 @@ public class Calculator extends AppCompatActivity {
             */
 
             case "bPercent":
+                setReg(getDisplayValue(inputText));
                 percentage();
-                clrRegOnCnctnt
+                clrRegOnCnctnt = true;
                 break;
 
             case "bSquareRoot":
+                setReg(getDisplayValue(inputText));
                 sqrt();
+                clrRegOnCnctnt = true;
                 break;
 
             case "bClear":
                 clear();
+                updateOutput();
                 break;
 
             case "bEquals":
                 equals();
+                clrRegOnCnctnt = true;
+                updateOutput();
                 break;
 
             default:
                 lastButton = id;
                 concatenate(id.charAt(1));
-                updateOutput(inputText);
+                updateOutput();
                 break;
         }
 
-
-        lastOp = "something";
         updateOutput();
 
     }
 
-    private void getEntryType(){
-
-    }
-
     private void performLastOp(){
-        if (lastOp.equals("")){
-            setAcc(reg);
-        }
-        else{
-            switch (lastOp){
-                case "bAddition":
-                    add();
-                    break;
-                case "bSubtraction":
-                    subtract();
-                    break;
-                case "bMultiplication":
-                    multiply();
-                    break;
-                case "bDivision":
-                    break;
+        setReg(getDisplayValue(inputText));
+        switch (lastOp){
+            case "bAddition":
+                add();
+                break;
+            case "bSubtraction":
+                subtract();
+                break;
+            case "bMultiplication":
+                multiply();
+                break;
+            case "bDivision":
+                break;
             }
-        }
+
         outputText = "" + acc;
         updateOutput();
     }
@@ -140,9 +145,10 @@ public class Calculator extends AppCompatActivity {
             inputText = "" + c;
             clrRegOnCnctnt = false;
         }
-        if (!(c == '.' && hasDecimal(inputText))){inputText = inputText + c;}
+        else if (!(c == '.' && hasDecimal(inputText))){inputText = (String) inputText + c;}
+
         outputText = inputText;
-        updateOutput();
+
     }
 
 
@@ -179,27 +185,31 @@ public class Calculator extends AppCompatActivity {
     }
 
     private void sqrt(){
+        reg = (float) Math.sqrt(reg);
+        outputText = "" + reg;
 
     }
 
     private void percentage(){
         float mltplr = 1;
         if(lastOp == "bAddition" || lastOp == "bSubtraction"){mltplr = mltplr * acc;}
-        reg = 
+        reg = mltplr * reg / 100;
+        outputText = "" + reg;
 
     }
 
     private void equals(){
         //perform last operation with acc and reg (call method)
         performLastOp();
+        outputText = "" + acc;
         //updateOutput();
-        clrRegOnCnctnt = true;
+
     }
 
     private void updateOutput(){
         TextView outputWindow = findViewById(R.id.output);
         if(hasDecimal(outputText)){outputWindow.setText(outputText);}
-        else{outputWindow.setText(outputText+ '.');}
+        else{outputWindow.setText("" + Integer.parseInt(outputText) + '.');}
 
     }
 
@@ -223,12 +233,6 @@ public class Calculator extends AppCompatActivity {
     }
 
     private float getDisplayValue(String input){
-        /*
-        if(input.charAt(0) == '-'){
-            input = input.substring(1);
-            return 0 - Float.parseFloat(input);
-        }
-        */
         return Float.parseFloat(input);
     }
 
