@@ -13,11 +13,14 @@ import android.widget.*;
 public class Calculator extends AppCompatActivity {
     private float acc;
     private float reg;
+
     private String inputText;
     private String outputText;
     private String lastOp;
+    private String lastButton;
 
-    //private boolean stateTerminal; // for determining if the text view should concatenate input or replace text with input.
+    private boolean clrRegOnCnctnt;
+    //(deprecated by equalsPressed? private boolean stateTerminal; // for determining if the text view should concatenate input or replace text with input.
 
 /*
     private enum Op{
@@ -40,15 +43,17 @@ public class Calculator extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        clrRegOnCnctnt = false;
         clear();
-        updateOutput("" + Float.parseFloat("25."));
+        lastButton = "bClear";
+        updateOutput("" + Float.parseFloat("-25."));
     }
 
     private void clear(){
         acc = 0;
         reg = 0;
         outputText = "0";
-        lastOp = "";
+        lastOp = "bAddition";
 
     }
 
@@ -56,14 +61,41 @@ public class Calculator extends AppCompatActivity {
         String id = (v.getResources().getResourceName(v.getId())).split("/")[1];
         switch (id){
             case "bAddition": case "bSubtraction": case "bMultiplication": case "bDivision":
-                setReg(getInputValue(inputText));
-                performLastOp();
-
+                if(!(lastButton.equals("bAddition") || lastButton.equals("bSubtraction") || lastButton.equals("bMultiplication") || lastButton.equals("bDivision"))){
+                    setReg(getDisplayValue(inputText));
+                    performLastOp();
+                }
                 lastOp = id;
+                clrRegOnCnctnt = true;
                 break;
-            case: ""
+
+            case "bSignChange":
+                negate();
+                break;
+            /*
+            case "bDecimalPt":
+                break;
+            */
+
+            case "bPercent":
+                percentage();
+                clrRegOnCnctnt
+                break;
+
+            case "bSquareRoot":
+                sqrt();
+                break;
+
+            case "bClear":
+                clear();
+                break;
+
+            case "bEquals":
+                equals();
+                break;
 
             default:
+                lastButton = id;
                 concatenate(id.charAt(1));
                 updateOutput(inputText);
                 break;
@@ -104,7 +136,13 @@ public class Calculator extends AppCompatActivity {
 
 
     private void concatenate(char c) {
+        if (clrRegOnCnctnt){
+            inputText = "" + c;
+            clrRegOnCnctnt = false;
+        }
         if (!(c == '.' && hasDecimal(inputText))){inputText = inputText + c;}
+        outputText = inputText;
+        updateOutput();
     }
 
 
@@ -145,12 +183,17 @@ public class Calculator extends AppCompatActivity {
     }
 
     private void percentage(){
+        float mltplr = 1;
+        if(lastOp == "bAddition" || lastOp == "bSubtraction"){mltplr = mltplr * acc;}
+        reg = 
 
     }
 
     private void equals(){
         //perform last operation with acc and reg (call method)
-        updateOutput();
+        performLastOp();
+        //updateOutput();
+        clrRegOnCnctnt = true;
     }
 
     private void updateOutput(){
@@ -179,7 +222,7 @@ public class Calculator extends AppCompatActivity {
         return (num.indexOf('.') > 0);
     }
 
-    private float getInputValue(String input){
+    private float getDisplayValue(String input){
         /*
         if(input.charAt(0) == '-'){
             input = input.substring(1);
