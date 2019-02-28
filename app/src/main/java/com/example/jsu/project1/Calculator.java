@@ -216,7 +216,7 @@ public class Calculator extends AppCompatActivity {
     private void updateOutput(){
         TextView outputWindow = findViewById(R.id.output);
         if(hasDecimal(outputText)){outputWindow.setText(outputText);}
-        
+
         else{outputWindow.setText("" + Integer.parseInt(outputText) + '.');}
 
     }
